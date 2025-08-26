@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veg Delight - Pure Vegetarian Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #ff9e7d;
+            --accent: #ff4757;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffcce6, #ff99cc);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            color: #333;
+        }
+        
+        .cursor {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            position: fixed;
+            pointer-events: none;
+            mix-blend-mode: difference;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease;
+        }
+        
+        .cursor-click {
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            animation: bubble 0.5s forwards;
+        }
+        
+        @keyframes bubble {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .food-card {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .food-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        
+        .shining-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .ball {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn-primary:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        .nav-arrow {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .nav-arrow:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-arrow i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .back-arrow {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        
+        .back-arrow:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .back-arrow i {
+            color: white;
+            font-size: 24px;
+        }
+        
+        .menu-item {
+            transition: all 0.3s ease;
+        }
+        
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .bill-item {
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+            padding: 10px 0;
+        }
+        
+        .payment-option {
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover {
+            transform: scale(1.02);
+        }
+        
+        .payment-option input:checked + label {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px solid var(--primary);
+        }
+        
+        .thank-you-image {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    
+    <!-- Shining Background with Balls -->
+    <div class="shining-bg" id="shiningBg"></div>
+    
+    <!-- Navigation Arrows -->
+    <div class="nav-arrow hidden" id="nextArrow">
+        <i class="fas fa-arrow-right"></i>
+    </div>
+    
+    <div class="back-arrow hidden" id="backArrow">
+        <i class="fas fa-arrow-left"></i>
+    </div>
+    
+    <!-- Page 1: Welcome Page -->
+    <div class="page active" id="welcomePage">
+        <div class="container mx-auto flex flex-col items-center justify-center h-full">
+            <h1 class="text-6xl md:text-8xl font-bold mb-8 text-center glow-text" style="color: #ff4757;">
+                Veg Delight
+            </h1>
+            
+            <div class="w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden mb-12 border-8 border-white shadow-xl">
+                <img src="https://i.postimg.cc/hPGFmxXm/vegetarian-food-menu-24908-54718.jpg" 
+                     alt="Veg Delight" 
+                     class="w-full h-full object-cover">
+            </div>
+            
+            <p class="text-xl md:text-2xl mb-12 text-center max-w-2xl">
+                Experience the pure joy of vegetarian cuisine with our delicious and healthy menu!
+            </p>
+            
+            <button class="btn-primary text-xl" id="startOrderBtn">
+                Start Ordering <i class="fas fa-utensils ml-2"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Page 2: Menu Display -->
+    <div class="page" id="menuPage">
+        <div class="container mx-auto py-8">
+            <h2 class="text-4xl font-bold mb-8 text-center glow-text" style="color: #ff4757;">
+                Our Delicious Menu
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Menu Item 1 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/8z5Q1J2j/paneer-butter-masala.jpg" 
+                             alt="Paneer Butter Masala" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Paneer Butter Masala</h3>
+                    <p class="text-gray-600 mb-4">Creamy cottage cheese in rich tomato gravy</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹180</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 101</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 2 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/9FjQ7JQ5/veg-biryani.jpg" 
+                             alt="Veg Biryani" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Veg Biryani</h3>
+                    <p class="text-gray-600 mb-4">Fragrant basmati rice with mixed vegetables</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹150</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 102</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 3 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/8CJ4JQ5G/masala-dosa.jpg" 
+                             alt="Masala Dosa" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Masala Dosa</h3>
+                    <p class="text-gray-600 mb-4">Crispy rice crepe with spiced potato filling</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹120</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 103</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 4 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/8z5Q1J2j/paneer-butter-masala.jpg" 
+                             alt="Veg Pizza" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Veg Pizza</h3>
+                    <p class="text-gray-600 mb-4">Thin crust with fresh veggies and cheese</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹200</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 104</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 5 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/9FjQ7JQ5/veg-biryani.jpg" 
+                             alt="Fresh Lime Juice" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Fresh Lime Juice</h3>
+                    <p class="text-gray-600 mb-4">Refreshing lime with mint and spices</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹70</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 105</span>
+                    </div>
+                </div>
+                
+                <!-- Menu Item 6 -->
+                <div class="food-card bg-white rounded-xl p-6">
+                    <div class="w-full h-48 rounded-lg overflow-hidden mb-4">
+                        <img src="https://i.postimg.cc/8CJ4JQ5G/masala-dosa.jpg" 
+                             alt="Dal Tadka" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">Dal Tadka</h3>
+                    <p class="text-gray-600 mb-4">Yellow lentils tempered with spices</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xl font-bold">₹130</span>
+                        <span class="text-sm bg-pink-100 text-pink-800 px-3 py-1 rounded-full">ID: 106</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 3: Place Order -->
+    <div class="page" id="orderPage">
+        <div class="container mx-auto py-8 max-w-4xl">
+            <h2 class="text-4xl font-bold mb-8 text-center glow-text" style="color: #ff4757;">
+                Place Your Order
+            </h2>
+            
+            <div class="bg-white rounded-xl p-8 shadow-lg mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-lg font-medium mb-2">Item ID or Name</label>
+                        <input type="text" id="itemInput" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-lg font-medium mb-2">Quantity</label>
+                        <input type="number" id="quantityInput" min="1" value="1" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    </div>
+                </div>
+                
+                <button class="btn-primary w-full py-3 text-lg" id="addItemBtn">
+                    Add to Order <i class="fas fa-plus ml-2"></i>
+                </button>
+            </div>
+            
+            <div class="bg-white rounded-xl p-8 shadow-lg">
+                <h3 class="text-2xl font-bold mb-6">Your Order</h3>
+                
+                <div id="orderItems" class="mb-6">
+                    <p class="text-gray-500 text-center py-4">No items added yet</p>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button class="btn-primary" id="addMoreBtn">
+                        <i class="fas fa-utensils mr-2"></i> Add More Items
+                    </button>
+                    <button class="btn-primary" id="proceedToBillBtn">
+                        Proceed to Bill <i class="fas fa-receipt ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 4: Bill Calculation & Payment -->
+    <div class="page" id="billPage">
+        <div class="container mx-auto py-8 max-w-4xl">
+            <h2 class="text-4xl font-bold mb-8 text-center glow-text" style="color: #ff4757;">
+                Your Bill
+            </h2>
+            
+            <div class="bg-white rounded-xl p-8 shadow-lg mb-8">
+                <div id="billItems" class="mb-8">
+                    <!-- Bill items will be added here -->
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mb-6">
+                    <div class="flex justify-between text-lg mb-2">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="flex justify-between text-lg mb-2">
+                        <span>Tax (5%):</span>
+                        <span id="tax">₹0</span>
+                    </div>
+                    <div class="flex justify-between text-lg mb-2">
+                        <span>Discount:</span>
+                        <span id="discount">₹0</span>
+                    </div>
+                    <div class="flex justify-between text-2xl font-bold mt-4 pt-4 border-t border-gray-200">
+                        <span>Total:</span>
+                        <span id="total">₹0</span>
+                    </div>
+                </div>
+                
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4">Payment Method</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="payment-option">
+                            <input type="radio" id="cash" name="payment" value="cash" class="hidden" checked>
+                            <label for="cash" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer">
+                                <i class="fas fa-money-bill-wave text-3xl mr-4 text-green-500"></i>
+                                <div>
+                                    <h4 class="font-bold">Cash</h4>
+                                    <p class="text-sm text-gray-600">Pay with cash on delivery</p>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" id="card" name="payment" value="card" class="hidden">
+                            <label for="card" class="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer">
+                                <i class="fas fa-credit-card text-3xl mr-4 text-blue-500"></i>
+                                <div>
+                                    <h4 class="font-bold">Card</h4>
+                                    <p class="text-sm text-gray-600">Pay with credit/debit card</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn-primary w-full py-4 text-xl" id="confirmPaymentBtn">
+                    Confirm Payment <i class="fas fa-check-circle ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 5: Thank You Page -->
+    <div class="page" id="thankYouPage">
+        <div class="container mx-auto flex flex-col items-center justify-center h-full py-8">
+            <h1 class="text-5xl md:text-7xl font-bold mb-8 text-center glow-text" style="color: #ff4757;">
+                Thank You!
+            </h1>
+            
+            <div class="thank-you-image w-64 h-64 md:w-80 md:h-80 mb-12">
+                <img src="https://i.postimg.cc/G2BzFkWM/Screenshot-2025-08-26-094655.png" 
+                     alt="Thank You" 
+                     class="w-full h-full object-contain">
+            </div>
+            
+            <p class="text-xl md:text-2xl mb-12 text-center max-w-2xl">
+                Thank you for visiting Veg Delight! Your order has been placed successfully.
+            </p>
+            
+            <div class="flex gap-4">
+                <button class="btn-primary" id="exitBtn">
+                    Exit <i class="fas fa-sign-out-alt ml-2"></i>
+                </button>
+                <button class="btn-primary" id="homeBtn">
+                    Home <i class="fas fa-home ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Custom cursor effect
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.pageX + 'px';
+            cursor.style.top = e.pageY + 'px';
+        });
+        
+        document.addEventListener('click', () => {
+            cursor.classList.add('cursor-click');
+            setTimeout(() => {
+                cursor.classList.remove('cursor-click');
+            }, 100);
+            
+            // Create bubble effect
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.style.left = (event.pageX - 10) + 'px';
+            bubble.style.top = (event.pageY - 10) + 'px';
+            document.body.appendChild(bubble);
+            
+            // Play bubble sound
+            const bubbleSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-bubble-pop-with-delay-2357.mp3');
+            bubbleSound.volume = 0.3;
+            bubbleSound.play();
+            
+            // Remove bubble after animation
+            setTimeout(() => {
+                bubble.remove();
+            }, 500);
+        });
+        
+        // Create shining background balls
+        const shiningBg = document.getElementById('shiningBg');
+        for (let i = 0; i < 20; i++) {
+            const ball = document.createElement('div');
+            ball.classList.add('ball');
+            
+            // Random size between 50 and 150px
+            const size = Math.random() * 100 + 50;
+            ball.style.width = size + 'px';
+            ball.style.height = size + 'px';
+            
+            // Random position
+            ball.style.left = Math.random() * 100 + '%';
+            ball.style.top = Math.random() * 100 + '%';
+            
+            // Random animation duration
+            ball.style.animationDuration = Math.random() * 20 + 10 + 's';
+            ball.style.animationDelay = Math.random() * 5 + 's';
+            
+            shiningBg.appendChild(ball);
+        }
+        
+        // Page navigation
+        const pages = document.querySelectorAll('.page');
+        const nextArrow = document.getElementById('nextArrow');
+        const backArrow = document.getElementById('backArrow');
+        let currentPage = 0;
+        
+        function showPage(index) {
+            pages.forEach((page, i) => {
+                if (i === index) {
+                    page.classList.add('active');
+                } else {
+                    page.classList.remove('active');
+                }
+            });
+            
+            // Show/hide navigation arrows
+            if (index === 0) {
+                nextArrow.classList.remove('hidden');
+                backArrow.classList.add('hidden');
+            } else if (index === pages.length - 1) {
+                nextArrow.classList.add('hidden');
+                backArrow.classList.remove('hidden');
+            } else {
+                nextArrow.classList.remove('hidden');
+                backArrow.classList.remove('hidden');
+            }
+            
+            currentPage = index;
+        }
+        
+        // Next arrow click
+        nextArrow.addEventListener('click', () => {
+            if (currentPage < pages.length - 1) {
+                showPage(currentPage + 1);
+            }
+            
+            // Play chime sound
+            const chimeSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magic-chime-2018.mp3');
+            chimeSound.volume = 0.2;
+            chimeSound.play();
+        });
+        
+        // Back arrow click
+        backArrow.addEventListener('click', () => {
+            if (currentPage > 0) {
+                showPage(currentPage - 1);
+            }
+            
+            // Play chime sound
+            const chimeSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magic-chime-2018.mp3');
+            chimeSound.volume = 0.2;
+            chimeSound.play();
+        });
+        
+        // Button hover sound
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                const chimeSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magic-chime-2018.mp3');
+                chimeSound.volume = 0.1;
+                chimeSound.play();
+            });
+        });
+        
+        // Start Order Button
+        document.getElementById('startOrderBtn').addEventListener('click', () => {
+            showPage(1);
+        });
+        
+        // Menu items data
+        const menuItems = [
+            { id: 101, name: "Paneer Butter Masala", price: 180, image: "https://i.postimg.cc/8z5Q1J2j/paneer-butter-masala.jpg" },
+            { id: 102, name: "Veg Biryani", price: 150, image: "https://i.postimg.cc/9FjQ7JQ5/veg-biryani.jpg" },
+            { id: 103, name: "Masala Dosa", price: 120, image: "https://i.postimg.cc/8CJ4JQ5G/masala-dosa.jpg" },
+            { id: 104, name: "Veg Pizza", price: 200, image: "https://i.postimg.cc/8z5Q1J2j/paneer-butter-masala.jpg" },
+            { id: 105, name: "Fresh Lime Juice", price: 70, image: "https://i.postimg.cc/9FjQ7JQ5/veg-biryani.jpg" },
+            { id: 106, name: "Dal Tadka", price: 130, image: "https://i.postimg.cc/8CJ4JQ5G/masala-dosa.jpg" }
+        ];
+        
+        // Order functionality
+        let orderItems = [];
+        
+        // Add item to order
+        document.getElementById('addItemBtn').addEventListener('click', () => {
+            const itemInput = document.getElementById('itemInput').value.trim();
+            const quantity = parseInt(document.getElementById('quantityInput').value);
+            
+            if (!itemInput || isNaN(quantity) || quantity < 1) {
+                alert('Please enter a valid item and quantity');
+                return;
+            }
+            
+            // Find the menu item by ID or name
+            let item;
+            if (!isNaN(itemInput)) {
+                // Search by ID
+                item = menuItems.find(menuItem => menuItem.id === parseInt(itemInput));
+            } else {
+                // Search by name (case insensitive)
+                item = menuItems.find(menuItem => 
+                    menuItem.name.toLowerCase().includes(itemInput.toLowerCase())
+                );
+            }
+            
+            if (!item) {
+                alert('Item not found in menu');
+                return;
+            }
+            
+            // Check if item already exists in order
+            const existingItemIndex = orderItems.findIndex(orderItem => orderItem.id === item.id);
+            
+            if (existingItemIndex !== -1) {
+                // Update quantity if item already exists
+                orderItems[existingItemIndex].quantity += quantity;
+            } else {
+                // Add new item to order
+                orderItems.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: quantity,
+                    image: item.image
+                });
+            }
+            
+            // Clear inputs
+            document.getElementById('itemInput').value = '';
+            document.getElementById('quantityInput').value = '1';
+            
+            // Update order display
+            updateOrderDisplay();
+        });
+        
+        // Update order display
+        function updateOrderDisplay() {
+            const orderItemsContainer = document.getElementById('orderItems');
+            
+            if (orderItems.length === 0) {
+                orderItemsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No items added yet</p>';
+                return;
+            }
+            
+            let html = '';
+            orderItems.forEach(item => {
+                html += `
+                    <div class="menu-item flex items-center justify-between p-4 bg-gray-50 rounded-lg mb-2">
+                        <div class="flex items-center">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden mr-4">
+                                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h4 class="font-bold">${item.name}</h4>
+                                <p class="text-gray-600">₹${item.price} × ${item.quantity}</p>
+                            </div>
+                        </div>
+                        <div class="text-lg font-bold">
+                            ₹${item.price * item.quantity}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            orderItemsContainer.innerHTML = html;
+        }
+        
+        // Add more items button
+        document.getElementById('addMoreBtn').addEventListener('click', () => {
+            showPage(1);
+        });
+        
+        // Proceed to bill button
+        document.getElementById('proceedToBillBtn').addEventListener('click', () => {
+            if (orderItems.length === 0) {
+                alert('Please add at least one item to your order');
+                return;
+            }
+            
+            updateBillDisplay();
+            showPage(3);
+        });
+        
+        // Update bill display
+        function updateBillDisplay() {
+            const billItemsContainer = document.getElementById('billItems');
+            
+            let html = '';
+            let subtotal = 0;
+            
+            orderItems.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                html += `
+                    <div class="bill-item flex justify-between">
+                        <div>
+                            <span class="font-bold">${item.name}</span>
+                            <span class="text-gray-600 ml-2">(₹${item.price} × ${item.quantity})</span>
+                        </div>
+                        <div class="font-bold">
+                            ₹${itemTotal}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            billItemsContainer.innerHTML = html;
+            
+            // Calculate tax (5%)
+            const tax = subtotal * 0.05;
+            
+            // Calculate discount
+            let discount = 0;
+            if (subtotal > 1000) {
+                discount = subtotal * 0.2;
+            } else if (subtotal > 500) {
+                discount = subtotal * 0.1;
+            }
+            
+            // Calculate total
+            const total = subtotal + tax - discount;
+            
+            // Update totals
+            document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('tax').textContent = `₹${tax.toFixed(2)}`;
+            document.getElementById('discount').textContent = `₹${discount.toFixed(2)}`;
+            document.getElementById('total').textContent = `₹${total.toFixed(2)}`;
+        }
+        
+        // Confirm payment button
+        document.getElementById('confirmPaymentBtn').addEventListener('click', () => {
+            // In a real app, you would process payment here
+            showPage(4);
+        });
+        
+        // Exit button
+        document.getElementById('exitBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                // In a real app, you might close the window or redirect
+                alert('Thank you for visiting Veg Delight!');
+            }
+        });
+        
+        // Home button
+        document.getElementById('homeBtn').addEventListener('click', () => {
+            // Reset order
+            orderItems = [];
+            updateOrderDisplay();
+            
+            // Go to home page
+            showPage(0);
+        });
+    </script>
+</body>
+</html>
